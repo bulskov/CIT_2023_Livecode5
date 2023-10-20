@@ -89,5 +89,10 @@ namespace DataLayer
                 .Select(x => new ProductSearchModel { ProductName = x.Name, CategoryName = x.Category.Name })
                 .ToList();
         }
+
+        public IList<Category> GetCategoriesByName(string name)
+        {
+            return _categories.Where(x => x.Name.Contains(name)).ToList();
+        }
     }
 }

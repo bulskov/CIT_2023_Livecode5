@@ -16,8 +16,14 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetCetagories()
+    public IActionResult GetCetagories(string? name = null)
     {
+
+        if(name != null)
+        {
+            var categories = _dataService.GetCategoriesByName(name);
+            return Ok(categories);
+        }
         return Ok(_dataService.GetCategories());
     }
     
