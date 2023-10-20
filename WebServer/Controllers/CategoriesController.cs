@@ -9,10 +9,12 @@ namespace WebServer.Controllers;
 public class CategoriesController : ControllerBase
 {
     private readonly IDataService _dataService;
+    private readonly LinkGenerator _linkGenerator;
 
-    public CategoriesController(IDataService dataService)
+    public CategoriesController(IDataService dataService, LinkGenerator linkGenerator)
     {
         _dataService = dataService;
+        _linkGenerator = linkGenerator;
     }
 
     [HttpGet]
@@ -21,13 +23,14 @@ public class CategoriesController : ControllerBase
 
         if(name != null)
         {
-            var categories = _dataService.GetCategoriesByName(name);
-            return Ok(categories);
+            var categoriesX = _dataService.GetCategoriesByName(name);
+            return Ok(categoriesX);
         }
-        return Ok(_dataService.GetCategories());
+        var categories = _dataService.GetCategories().Select(x => CreateCategoryModel(x));
+        return Ok(categories);
     }
     
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = nameof(GetCategory))]
     public IActionResult GetCategory(int id)
     {
         var category = _dataService.GetCategory(id);
@@ -36,7 +39,7 @@ public class CategoriesController : ControllerBase
             return NotFound();
         }
 
-        return Ok(category);
+        return Ok(CreateCategoryModel(category));
     }
 
     [HttpPost]
@@ -54,5 +57,20 @@ public class CategoriesController : ControllerBase
     }
 
 
+    private CategoryModel CreateCategoryModel(Category category)
+    {
+        return new CategoryModel
+        {
+            //Url = $"http://localhost:5001/api/categories/{category.Id}",
+            Url = GetUrl(nameof(GetCategory), new { category.Id }),
+            Name = category.Name,
+            Description = category.Description
+        };
+    }
+
+    private string? GetUrl(string name, object values)
+    {
+        return _linkGenerator.GetUriByName(HttpContext, name, values);
+    }
     
 }
